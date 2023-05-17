@@ -8,6 +8,19 @@ import { api } from '../services/api';
 import { Loading } from '../components/Loading';
 import { Error } from '../components/Error';
 
+interface ImageData {
+  title: string;
+  description: string;
+  url: string;
+  ts: number;
+  id: string;
+}
+
+interface Response {
+  data: ImageData[];
+  after?: number;
+}
+
 export default function Home(): JSX.Element {
   const {
     data,
@@ -18,14 +31,22 @@ export default function Home(): JSX.Element {
     hasNextPage,
   } = useInfiniteQuery(
     'images',
-    // TODO AXIOS REQUEST WITH PARAM
-    ,
-    // TODO GET AND RETURN NEXT PAGE PARAM
+    ({ pageParam = null }) =>
+      api.get<Response>('/api/images', {
+        params: {
+          after: pageParam,
+        },
+      }),
+    {
+      getNextPageParam: response => response?.data.after || null,
+    }
   );
 
   const formattedData = useMemo(() => {
-    // TODO FORMAT AND FLAT DATA ARRAY
+    return data.pages.map(item => item.data);
   }, [data]);
+
+  console.log(formattedData);
 
   // TODO RENDER LOADING SCREEN
 
@@ -36,7 +57,8 @@ export default function Home(): JSX.Element {
       <Header />
 
       <Box maxW={1120} px={20} mx="auto" my={20}>
-        <CardList cards={formattedData} />
+        {isLoading && <Loading />}
+        {/* <CardList cards={formattedData} /> */}
         {/* TODO RENDER LOAD MORE BUTTON IF DATA HAS NEXT PAGE */}
       </Box>
     </>
