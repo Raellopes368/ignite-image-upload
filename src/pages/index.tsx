@@ -43,23 +43,30 @@ export default function Home(): JSX.Element {
   );
 
   const formattedData = useMemo(() => {
-    return data.pages.map(item => item.data);
+    return data?.pages.reduce<ImageData[]>((acc, value) => {
+      return [...acc, ...value.data.data];
+    }, []);
   }, [data]);
 
-  console.log(formattedData);
+  if (isLoading) return <Loading />;
 
-  // TODO RENDER LOADING SCREEN
-
-  // TODO RENDER ERROR SCREEN
+  if (isError) return <Error />;
 
   return (
     <>
       <Header />
 
       <Box maxW={1120} px={20} mx="auto" my={20}>
-        {isLoading && <Loading />}
-        {/* <CardList cards={formattedData} /> */}
-        {/* TODO RENDER LOAD MORE BUTTON IF DATA HAS NEXT PAGE */}
+        <CardList cards={formattedData} />
+        {hasNextPage && (
+          <Button
+            colorScheme="orange"
+            onClick={() => fetchNextPage()}
+            isLoading={isFetchingNextPage}
+          >
+            Carregar mais
+          </Button>
+        )}
       </Box>
     </>
   );
